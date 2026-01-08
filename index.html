@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hair Stylist Commission Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        dark: '#1e293b',
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'pop-in': 'popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        popIn: {
+                            '0%': { transform: 'scale(0.9)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Modern Reset & Base */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f3f4f6;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .glass-card-dark {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(124, 58, 237, 0.95));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.5);
+        }
+
+        /* Animated Background Blobs */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+
+        /* Form Elements */
+        .custom-input {
+            background: #fff;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-input:focus {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -2px rgba(139, 92, 246, 0.05);
+            outline: none;
+        }
+
+        /* Stats Card Hover Effect */
+        .stat-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Service Selection Styling */
+        .service-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-option.border-indigo-500 {
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            border-color: transparent !important;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Star Rating */
+        .star-rating i {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-rating i.active {
+            color: #fbbf24;
+            /* yellow-400 */
+        }
+
+        .star-rating i.inactive {
+            color: #e2e8f0;
+            /* slate-200 */
+        }
+
+        /* Mobile Horizontal Scroll for Stats */
+        @media (max-width: 1024px) {
+            .stats-container {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+                gap: 1rem;
+                scroll-snap-type: x mandatory;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .stats-container::-webkit-scrollbar {
+                display: none;
+            }
+
+            .stat-card {
+                min-width: 260px;
+                scroll-snap-align: start;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-slate-600 selection:bg-indigo-100 selection:text-indigo-700">
+
+    <!-- Animated Background -->
+    <div class="bg-blob bg-purple-300 w-96 h-96 top-0 left-0 animate-blob"></div>
+    <div class="bg-blob bg-indigo-300 w-96 h-96 bottom-0 right-0 animate-blob animation-delay-2000"></div>
+    <div
+        class="bg-blob bg-pink-200 w-80 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-blob animation-delay-4000">
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 animate-slide-up">
+            <div class="text-center md:text-left mb-6 md:mb-0">
+                <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white">
+                        <i class="fas fa-cut text-lg"></i>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Stylist<span
+                            class="text-indigo-600">Pro</span></h1>
+                </div>
+                <p class="text-slate-500 font-medium ml-1">Commission & Client Tracker</p>
+            </div>
+
+            <div
+                class="flex items-center gap-4 bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-white/50 shadow-sm">
+                <button id="openTikTokModal"
+                    class="group relative px-4 py-2 bg-black text-white rounded-xl shadow-sm flex items-center justify-center hover:bg-slate-900 transition-all active:scale-95 text-xs font-bold gap-2">
+                    <i class="fab fa-tiktok text-pink-500"></i>
+                    <span>Inspo</span>
+                </button>
+                <div class="px-4 text-right border-r border-slate-200 pr-4">
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Payday</p>
+                    <p class="font-bold text-indigo-600 text-sm">Wed/Thu</p>
+                </div>
+                <button id="reminderToggle"
+                    class="group relative w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center hover:bg-indigo-50 transition-all active:scale-95">
+                    <i class="fas fa-bell text-indigo-500 text-lg group-hover:rotate-12 transition-transform"></i>
+                    <span class="absolute top-2 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                </button>
+                <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:scale-105 transition-transform">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Dashboard -->
+        <div class="stats-container mb-10 animate-slide-up" style="animation-delay: 0.1s;">
+            <!-- Card 1 -->
+            <div class="stat-card glass-panel rounded-3xl p-6 flex-1 stat-card-hover relative overflow-hidden group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-50 rounded-full group-hover:bg-indigo-100 transition-colors">
+                </div>
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Today's Clients</p>
+                        <p class="text-4xl font-extrabold text-slate-800" id="todayCount">0</p>
+                        <p
+                            class="text-sm font-medium text-indigo-500 mt-2 bg-indigo-50 inline-block px-2 py-1 rounded-lg">
+                            + <span id="todayEarnings">0</span> KSH
+                        </p>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-indigo-600 text-xl">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="stat-card glass-panel rounded-3xl p-6 flex-1 stat-card-hover relative overflow-hidden group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-green-50 rounded-full group-hover:bg-green-100 transition-colors">
+                </div>
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">This Week</p>
+                        <p class="text-4xl font-extrabold text-slate-800" id="weekCount">0</p>
+                        <p
+                            class="text-sm font-medium text-green-600 mt-2 bg-green-50 inline-block px-2 py-1 rounded-lg">
+                            <span id="weekEarnings">0</span> KSH Total
+                        </p>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-green-600 text-xl">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div
+                class="stat-card glass-card-dark text-white rounded-3xl p-6 flex-1 stat-card-hover relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-xl">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 rounded-full bg-indigo-400 opacity-20 blur-xl">
+                </div>
+
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-indigo-200 text-xs font-bold uppercase tracking-wider mb-2">Your Commission</p>
+                        <p class="text-4xl font-extrabold text-white" id="expectedCommission">0</p>
+                        <p class="text-sm text-indigo-100 mt-2 opacity-80">
+                            40% Share
+                        </p>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-xl border border-white/20">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="stat-card glass-panel rounded-3xl p-6 flex-1 stat-card-hover relative overflow-hidden group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full group-hover:bg-purple-100 transition-colors">
+                </div>
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Shared Jobs</p>
+                        <p class="text-4xl font-extrabold text-slate-800" id="sharedCount">0</p>
+                        <p
+                            class="text-sm font-medium text-purple-600 mt-2 bg-purple-50 inline-block px-2 py-1 rounded-lg">
+                            Team Splits
+                        </p>
+                    </div>
+                    <div
+                        class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-purple-600 text-xl">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-slide-up" style="animation-delay: 0.2s;">
+
+            <!-- LEFT COLUMN: Input Form & Recent List -->
+            <div class="lg:col-span-8 space-y-8">
+
+                <!-- Client Entry Form -->
+                <div class="glass-panel rounded-3xl p-1 shadow-xl">
+                    <div class="bg-white/50 rounded-[20px] p-6 sm:p-8">
+                        <div class="flex items-center justify-between mb-8">
+                            <h2 class="text-2xl font-bold text-slate-800">New Client</h2>
+                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full">40%
+                                Rate</span>
+                        </div>
+
+                        <form id="clientForm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div class="group">
+                                    <label
+                                        class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
+                                        for="clientName">
+                                        Client Name
+                                    </label>
+                                    <div class="relative">
+                                        <i
+                                            class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+                                        <input type="text" id="clientName"
+                                            class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
+                                            placeholder="Client Name" required>
+                                    </div>
+                                </div>
+
+                                <div class="group">
+                                    <label
+                                        class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
+                                        for="clientStyle">
+                                        Style Used (For History)
+                                    </label>
+                                    <div class="relative">
+                                        <i
+                                            class="fas fa-feather absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+                                        <input type="text" id="clientStyle"
+                                            class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
+                                            placeholder="e.g. Braids, Weave..." required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="group mb-8">
+                                <label class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
+                                    for="serviceAmount">
+                                    Amount (KSH)
+                                </label>
+                                <div class="relative">
+                                    <i
+                                        class="fas fa-tag absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+                                    <input type="number" id="serviceAmount" min="1" value="800"
+                                        class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-bold"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="mb-8">
+                                <label
+                                    class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-4 pl-1">Select
+                                    Services Done</label>
+                                <div class="grid grid-cols-3 gap-3 sm:gap-4">
+                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                        data-service="wash">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 text-blue-500">
+                                            <i class="fas fa-shower text-lg"></i>
+                                        </div>
+                                        <p class="font-bold text-sm text-slate-700">Washing</p>
+                                    </div>
+
+                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                        data-service="retouch">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center mb-2 text-pink-500">
+                                            <i class="fas fa-paint-brush text-lg"></i>
+                                        </div>
+                                        <p class="font-bold text-sm text-slate-700">Retouch</p>
+                                    </div>
+
+                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                        data-service="style">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-2 text-purple-500">
+                                            <i class="fas fa-cut text-lg"></i>
+                                        </div>
+                                        <p class="font-bold text-sm text-slate-700">Styling</p>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="servicesPerformed" value="wash,retouch,style">
+                            </div>
+
+                            <div class="mb-8 bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                                <div class="flex items-center justify-between mb-4 sm:mb-0">
+                                    <span class="text-sm font-bold text-slate-700">Split with teammate?</span>
+                                    <div class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+                                        <label class="cursor-pointer relative">
+                                            <input type="radio" id="sharedNo" name="shared" value="no" checked
+                                                class="peer sr-only">
+                                            <div
+                                                class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500 transition-all peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md">
+                                                No</div>
+                                        </label>
+                                        <label class="cursor-pointer relative">
+                                            <input type="radio" id="sharedYes" name="shared" value="yes"
+                                                class="peer sr-only">
+                                            <div
+                                                class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500 transition-all peer-checked:bg-purple-600 peer-checked:text-white peer-checked:shadow-md">
+                                                Yes</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="splitSection" class="mt-4 hidden animate-slide-up space-y-4">
+                                    <div>
+                                        <label
+                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2"
+                                            for="colleagueName">
+                                            With Which Colleague?
+                                        </label>
+                                        <input type="text" id="colleagueName" placeholder="Colleague Name"
+                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2"
+                                            for="splitAmount">
+                                            Split Amount (KSH)
+                                        </label>
+                                        <input type="number" id="splitAmount" min="0" value="0"
+                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700">
+                                        <p class="text-slate-400 text-xs mt-2 pl-1"><i
+                                                class="fas fa-info-circle mr-1"></i>
+                                            Deducted before calculation</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all active:scale-95 flex items-center justify-center gap-2 group">
+                                <i class="fas fa-plus-circle text-xl group-hover:rotate-90 transition-transform"></i>
+                                <span>Record Client</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="glass-panel rounded-3xl p-6 sm:p-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-xl font-bold text-slate-800">Recent History</h2>
+                        <div class="flex bg-slate-100/80 p-1 rounded-xl w-full sm:w-auto">
+                            <button id="viewToday"
+                                class="flex-1 sm:flex-none px-4 py-2 bg-white text-indigo-600 shadow-sm rounded-lg text-xs font-bold transition-all">Today</button>
+                            <button id="viewWeek"
+                                class="flex-1 sm:flex-none px-4 py-2 text-slate-500 hover:text-indigo-600 rounded-lg text-xs font-bold transition-all">Week</button>
+                            <button id="viewAll"
+                                class="flex-1 sm:flex-none px-4 py-2 text-slate-500 hover:text-indigo-600 rounded-lg text-xs font-bold transition-all">All</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-hidden">
+                        <table class="w-full border-separate border-spacing-y-3">
+                            <thead class="hidden md:table-header-group">
+                                <tr>
+                                    <th
+                                        class="text-left py-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Client</th>
+                                    <th
+                                        class="text-left py-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Style</th>
+                                    <th
+                                        class="text-left py-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Total</th>
+                                    <th
+                                        class="text-left py-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Your Cut</th>
+                                    <th
+                                        class="text-left py-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Time</th>
+                                    <th class="w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientTableBody">
+                                <!-- Dynamic Rows will be injected here -->
+                                <tr id="noClientsRow">
+                                    <td colspan="6" class="text-center py-12">
+                                        <div class="flex flex-col items-center justify-center opacity-40">
+                                            <div
+                                                class="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-3">
+                                                <i class="fas fa-clipboard-list text-2xl text-slate-400"></i>
+                                            </div>
+                                            <p class="text-slate-500 font-medium">No records yet today</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Wallet & Tools -->
+            <div class="lg:col-span-4 space-y-6">
+
+                <!-- Client Directory Button -->
+                <button id="openAllClientsModal"
+                    class="w-full bg-slate-800 text-white p-4 rounded-3xl shadow-lg hover:bg-slate-700 transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                            <i class="fas fa-address-book text-indigo-300"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold">Client Directory</h3>
+                            <p class="text-xs text-slate-400">Search & Filter All Work</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-500 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <!-- Digital Wallet Card -->
+                <div
+                    class="relative w-full h-56 rounded-3xl overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-300">
+                    <!-- Background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800"></div>
+                    <div
+                        class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10">
+                    </div>
+                    <div
+                        class="absolute bottom-0 left-0 w-32 h-32 bg-pink-500 opacity-20 rounded-full blur-xl transform -translate-x-5 translate-y-5">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="relative h-full p-6 flex flex-col justify-between text-white">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-indigo-200 text-xs font-bold uppercase tracking-wider">Weekly Payout</p>
+                                <p class="text-3xl font-bold mt-1 tracking-tight" id="weeklyCommission">0 KSH</p>
+                            </div>
+                            <i class="fas fa-wifi opacity-50 rotate-90"></i>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-indigo-200 mb-1">
+                                <span>Total Sales</span>
+                                <span id="weeklyTotalEarnings">0 KSH</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-indigo-200 mb-3">
+                                <span>Clients</span>
+                                <span id="weeklyTotalClients">0</span>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/20">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                    <span class="text-xs font-medium text-indigo-100">Est. Pay: Wed/Thu</span>
+                                </div>
+                                <span class="font-bold text-lg" id="paydayAmount">0 KSH</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reminder Settings -->
+                <div class="glass-panel rounded-3xl p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-clock text-indigo-500"></i> Smart Reminders
+                    </h3>
+
+                    <div class="flex items-center justify-between mb-6 bg-white/50 p-3 rounded-xl">
+                        <div>
+                            <p class="font-semibold text-slate-700 text-sm">Hourly Check</p>
+                            <p class="text-xs text-slate-500">Buzz if idle</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="hourlyReminders" class="sr-only peer" checked>
+                            <div
+                                class="w-12 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 shadow-inner">
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="mb-6 px-1">
+                        <div class="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                            <span>Frequency</span>
+                            <span id="frequencyValue" class="text-indigo-600">2 hours</span>
+                        </div>
+                        <input type="range" id="reminderFrequency" min="1" max="6" value="2"
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    </div>
+
+                    <button id="testReminder"
+                        class="w-full py-3 rounded-xl border-2 border-dashed border-indigo-200 text-indigo-600 font-bold text-sm hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-bell-o"></i> Test Notification
+                    </button>
+                </div>
+
+                <!-- Quick Actions Grid -->
+                <div class="glass-panel rounded-3xl p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Tools</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="resetDay"
+                            class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group hover:bg-slate-50">
+                            <i
+                                class="fas fa-redo-alt text-slate-400 text-xl group-hover:rotate-180 transition-transform duration-500"></i>
+                            <span class="text-xs font-bold text-slate-600">Reset Day</span>
+                        </button>
+
+                        <button id="exportData"
+                            class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group hover:bg-slate-50">
+                            <i
+                                class="fas fa-file-export text-slate-400 text-xl group-hover:-translate-y-1 transition-transform"></i>
+                            <span class="text-xs font-bold text-slate-600">Export CSV</span>
+                        </button>
+
+                        <button id="simulateClient"
+                            class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group">
+                            <i
+                                class="fas fa-magic text-emerald-500 text-xl group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold text-emerald-700">Demo Fill</span>
+                        </button>
+
+                        <button id="clearAll"
+                            class="bg-rose-50 p-4 rounded-xl border border-rose-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group">
+                            <i
+                                class="fas fa-trash-alt text-rose-500 text-xl group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold text-rose-700">Wipe All</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MODALS ================= -->
+
+        <!-- 1. All Clients Search Modal -->
+        <div id="allClientsModal" class="fixed inset-0 z-50 hidden">
+            <div class="modal-overlay absolute inset-0" id="closeClientsModalOverlay"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-4">
+                <div class="glass-panel bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                    <div class="p-6 border-b border-slate-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-slate-800">Client Directory</h2>
+                            <button
+                                class="close-modal-btn w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200">
+                                <i class="fas fa-times text-slate-500"></i>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <i
+                                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="clientSearchInput" placeholder="Search by name, style, or date..."
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                        </div>
+                    </div>
+                    <div class="overflow-y-auto p-4 flex-1" id="fullClientList">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Client Details Modal (Full Size) -->
+        <div id="clientDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+            <div class="modal-overlay absolute inset-0 min-h-full" id="closeDetailsModalOverlay"></div>
+            <div
+                class="relative min-h-screen md:min-h-0 md:absolute md:top-10 md:left-1/2 md:transform md:-translate-x-1/2 w-full max-w-3xl md:px-4 md:pb-10">
+                <div
+                    class="bg-white md:rounded-3xl shadow-2xl min-h-screen md:min-h-0 overflow-hidden relative animate-pop-in">
+
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 md:p-10 text-white relative">
+                        <button
+                            class="close-modal-btn absolute top-6 right-6 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="flex items-center gap-4 mt-4">
+                            <div
+                                class="w-16 h-16 rounded-full bg-white text-indigo-600 flex items-center justify-center text-3xl font-bold shadow-lg">
+                                <span id="detailAvatar">M</span>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-bold" id="detailName">Mary Jane</h2>
+                                <p class="text-indigo-100 opacity-90"><i class="fas fa-star text-yellow-400 mr-1"></i>
+                                    VIP Client</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 mt-6 text-sm font-medium">
+                            <div class="bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm">
+                                <span id="detailVisitCount">0</span> Visits
+                            </div>
+                            <div class="bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm">
+                                <span id="detailTotalSpent">0</span> KSH Total
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6 md:p-10 space-y-8 bg-slate-50">
+
+                        <!-- Hair Profile (With Inline Edits) -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 animate-slide-up">
+                            <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-user-circle text-indigo-500"></i> Hair Profile
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <span class="text-xs font-bold uppercase text-slate-400">Type</span>
+                                        <div id="hairTypeContainer" class="text-sm font-bold text-slate-700"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <span class="text-xs font-bold uppercase text-slate-400">Thickness</span>
+                                        <div id="hairThicknessContainer" class="text-sm font-bold text-slate-700"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <span class="text-xs font-bold uppercase text-slate-400">Color</span>
+                                        <div id="hairColorContainer" class="text-sm font-bold text-slate-700"></div>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="bg-slate-50 rounded-xl p-3">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs font-bold uppercase text-slate-400">Hair Health</span>
+                                            <div id="hairHealthContainer" class="star-rating text-sm"></div>
+                                        </div>
+                                        <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                            <div id="healthBar"
+                                                class="h-full bg-green-500 w-0 transition-all duration-1000"></div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-xl p-3">
+                                        <span class="text-xs font-bold uppercase text-slate-400 block mb-2">Products
+                                            Used</span>
+                                        <div id="productsContainer" class="flex flex-wrap gap-2">
+                                            <!-- Products injected here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Style History & Suggestions -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 animate-slide-up"
+                            style="animation-delay: 0.1s;">
+                            <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-history text-purple-500"></i> Style History
+                            </h3>
+                            <div class="space-y-4">
+                                <div id="historyList" class="space-y-3">
+                                    <!-- History items -->
+                                </div>
+
+                                <div class="mt-6 pt-6 border-t border-slate-100">
+                                    <h4 class="font-bold text-slate-700 mb-2">Style Analysis</h4>
+                                    <p id="styleSuggestion"
+                                        class="text-sm text-slate-600 leading-relaxed bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                        <!-- Suggestion injected here -->
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maintenance & WhatsApp -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 animate-slide-up"
+                            style="animation-delay: 0.2s;">
+                            <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                                <i class="fab fa-whatsapp text-green-500"></i> Client Care
+                            </h3>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">WhatsApp
+                                        Number</label>
+                                    <input type="tel" id="clientPhone" placeholder="07..."
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-700 focus:border-green-500 outline-none">
+                                </div>
+                                <div class="flex-1 flex items-end">
+                                    <button id="sendMaintenance"
+                                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                        <i class="fab fa-whatsapp"></i> Send Maintenance Tips
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-3 text-center">Redirects to WhatsApp with a pre-filled
+                                message based on hair analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. TikTok Modal -->
+        <div id="tikTokModal" class="fixed inset-0 z-50 hidden">
+            <div class="modal-overlay absolute inset-0" id="closeTikTokModalOverlay"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-sm">
+                <div
+                    class="bg-black rounded-[30px] overflow-hidden shadow-2xl relative border-4 border-slate-800 h-[600px] flex flex-col items-center justify-center text-white">
+                    <button
+                        class="close-modal-btn absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-times text-white"></i>
+                    </button>
+
+                    <div class="text-center p-6">
+                        <i class="fab fa-tiktok text-6xl text-pink-500 mb-4 animate-pulse"></i>
+                        <h3 class="text-xl font-bold mb-2">Style Inspiration</h3>
+                        <p class="text-slate-400 text-sm mb-6">Check out my latest work on TikTok for ideas!</p>
+                        <a href="https://www.tiktok.com" target="_blank"
+                            class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105">
+                            Open TikTok Profile
+                        </a>
+                    </div>
+
+                    <div class="absolute bottom-6 text-xs text-slate-600">
+                        Shows profile styles
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Premium Notification Toast -->
+        <div id="notification" class="fixed top-6 right-6 z-[60] hidden animate-slide-up">
+            <div
+                class="glass-panel bg-white/90 backdrop-blur-xl border-l-4 border-indigo-500 rounded-xl shadow-2xl p-4 max-w-sm w-full flex items-start gap-4">
+                <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2">
+                    <i class="fas fa-bell text-indigo-600"></i>
+                </div>
+                <div class="flex-1 pt-1">
+                    <h4 class="text-sm font-bold text-slate-800" id="notificationTitle">Notification</h4>
+                    <p class="mt-1 text-sm text-slate-500 leading-relaxed" id="notificationMessage">Message body goes
+                        here.</p>
+                </div>
+                <button id="closeNotification" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-slate-400 text-xs font-medium pb-8">
+            <p>StylistPro Commission System v2.5</p>
+        </footer>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // App state
+        const state = {
+            clients: [],
+            reminderEnabled: true,
+            reminderFrequency: 2, // hours
+            lastRecordTime: null,
+            lastReminderTime: null
+        };
+
+        // DOM Elements
+        const clientForm = document.getElementById('clientForm');
+        const serviceOptions = document.querySelectorAll('.service-option');
+        const servicesPerformedInput = document.getElementById('servicesPerformed');
+        const sharedRadio = document.querySelectorAll('input[name="shared"]');
+        const splitSection = document.getElementById('splitSection');
+        const hourlyReminders = document.getElementById('hourlyReminders');
+        const reminderFrequency = document.getElementById('reminderFrequency');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const notification = document.getElementById('notification');
+        const closeNotification = document.getElementById('closeNotification');
+        const testReminder = document.getElementById('testReminder');
+        const clientTableBody = document.getElementById('clientTableBody');
+        const noClientsRow = document.getElementById('noClientsRow');
+        const viewToday = document.getElementById('viewToday');
+        const viewWeek = document.getElementById('viewWeek');
+        const viewAll = document.getElementById('viewAll');
+        const resetDay = document.getElementById('resetDay');
+        const exportData = document.getElementById('exportData');
+        const simulateClient = document.getElementById('simulateClient');
+        const clearAll = document.getElementById('clearAll');
+
+        // Modal Elements
+        const openAllClientsModal = document.getElementById('openAllClientsModal');
+        const allClientsModal = document.getElementById('allClientsModal');
+        const clientSearchInput = document.getElementById('clientSearchInput');
+        const fullClientList = document.getElementById('fullClientList');
+        const clientDetailsModal = document.getElementById('clientDetailsModal');
+        const openTikTokModal = document.getElementById('openTikTokModal');
+        const tikTokModal = document.getElementById('tikTokModal');
+        const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+        const modalOverlays = document.querySelectorAll('.modal-overlay');
+
+        // Stats elements
+        const todayCount = document.getElementById('todayCount');
+        const todayEarnings = document.getElementById('todayEarnings');
+        const weekCount = document.getElementById('weekCount');
+        const weekEarnings = document.getElementById('weekEarnings');
+        const expectedCommission = document.getElementById('expectedCommission');
+        const sharedCount = document.getElementById('sharedCount');
+        const weeklyTotalClients = document.getElementById('weeklyTotalClients');
+        const weeklyTotalEarnings = document.getElementById('weeklyTotalEarnings');
+        const weeklyCommission = document.getElementById('weeklyCommission');
+        const paydayAmount = document.getElementById('paydayAmount');
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function () {
+            loadState();
+            renderClients();
+            updateStats();
+            setupEventListeners();
+            startReminderCheck();
+
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification(
+                    'Welcome back, Stylist!',
+                    'Ready to track your earnings? Add your first client to get started.'
+                );
+            }, 1000);
+        });
+
+        // Load state from localStorage
+        function loadState() {
+            const savedState = localStorage.getItem('stylistTrackerState');
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                state.clients = parsed.clients || [];
+                state.reminderEnabled = parsed.reminderEnabled !== undefined ? parsed.reminderEnabled : true;
+                state.reminderFrequency = parsed.reminderFrequency || 2;
+                state.lastRecordTime = parsed.lastRecordTime ? new Date(parsed.lastRecordTime) : null;
+                state.lastReminderTime = parsed.lastReminderTime ? new Date(parsed.lastReminderTime) : null;
+
+                // Update UI to match loaded state
+                hourlyReminders.checked = state.reminderEnabled;
+                reminderFrequency.value = state.reminderFrequency;
+                frequencyValue.textContent = `${state.reminderFrequency} hours`;
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('stylistTrackerState', JSON.stringify(state));
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Service selection
+            serviceOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    const service = this.getAttribute('data-service');
+                    let currentServices = servicesPerformedInput.value.split(',');
+
+                    if (currentServices.includes(service)) {
+                        currentServices = currentServices.filter(s => s !== service);
+                        this.classList.remove('border-indigo-500', 'bg-indigo-50');
+                        this.querySelector('div').className = this.querySelector('div').className.replace('bg-indigo-100 text-indigo-500', '');
+                    } else {
+                        currentServices.push(service);
+                        this.classList.add('border-indigo-500', 'bg-indigo-50');
+                    }
+
+                    servicesPerformedInput.value = currentServices.filter(s => s).join(',');
+                });
+            });
+
+            // Shared service toggle
+            sharedRadio.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'yes') {
+                        splitSection.classList.remove('hidden');
+                    } else {
+                        splitSection.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Reminder frequency slider
+            reminderFrequency.addEventListener('input', function () {
+                state.reminderFrequency = parseInt(this.value);
+                frequencyValue.textContent = `${state.reminderFrequency} ${state.reminderFrequency === 1 ? 'hour' : 'hours'}`;
+                saveState();
+            });
+
+            // Reminder toggle
+            hourlyReminders.addEventListener('change', function () {
+                state.reminderEnabled = this.checked;
+                saveState();
+                if (state.reminderEnabled) {
+                    showNotification('Reminders Active', `You'll get a nudge every ${state.reminderFrequency} hours.`);
+                } else {
+                    showNotification('Reminders Paused', 'Notifications are disabled.');
+                }
+            });
+
+            // Form submission
+            clientForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const clientName = document.getElementById('clientName').value;
+                const clientStyle = document.getElementById('clientStyle').value;
+                const serviceAmount = parseInt(document.getElementById('serviceAmount').value);
+                const servicesPerformed = servicesPerformedInput.value.split(',').filter(s => s);
+                const isShared = document.querySelector('input[name="shared"]:checked').value === 'yes';
+                const colleagueName = isShared ? document.getElementById('colleagueName').value : '';
+                const splitAmount = isShared ? parseInt(document.getElementById('splitAmount').value) : 0;
+
+                // Copy persistent data from previous records of same client
+                const previousRecord = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+
+                const client = {
+                    id: Date.now(),
+                    name: clientName,
+                    style: clientStyle,
+                    date: new Date().toISOString(),
+                    serviceAmount,
+                    servicesPerformed,
+                    isShared,
+                    colleagueName,
+                    splitAmount,
+                    commission: calculateCommission(serviceAmount, splitAmount, servicesPerformed.length, isShared),
+                    // Persistent fields (if exist on prev record, copy them, else defaults)
+                    hairType: previousRecord?.hairType || null,
+                    hairThickness: previousRecord?.hairThickness || null,
+                    hairColor: previousRecord?.hairColor || null,
+                    hairHealth: previousRecord?.hairHealth || 0,
+                    products: previousRecord?.products || [],
+                    phoneNumber: previousRecord?.phoneNumber || ''
+                };
+
+                state.clients.unshift(client);
+                state.lastRecordTime = new Date();
+
+                saveState();
+                renderClients();
+                updateStats();
+                resetForm();
+
+                showNotification(
+                    'Client Saved!',
+                    `Added ${clientName} (${clientStyle}). Earned ${client.commission} KSH.`
+                );
+            });
+
+            // Modal Toggles
+            openAllClientsModal.addEventListener('click', () => {
+                renderFullClientList();
+                allClientsModal.classList.remove('hidden');
+            });
+
+            clientSearchInput.addEventListener('input', (e) => {
+                renderFullClientList(e.target.value);
+            });
+
+            openTikTokModal.addEventListener('click', () => {
+                tikTokModal.classList.remove('hidden');
+            });
+
+            // Close modals logic
+            const closeAllModals = () => {
+                allClientsModal.classList.add('hidden');
+                clientDetailsModal.classList.add('hidden');
+                tikTokModal.classList.add('hidden');
+            };
+
+            closeModalBtns.forEach(btn => btn.addEventListener('click', closeAllModals));
+            modalOverlays.forEach(overlay => overlay.addEventListener('click', closeAllModals));
+
+            // Standard buttons
+            closeNotification.addEventListener('click', () => notification.classList.add('hidden'));
+
+            viewToday.addEventListener('click', function () { setActiveViewButton(this); renderClients('today'); });
+            viewWeek.addEventListener('click', function () { setActiveViewButton(this); renderClients('week'); });
+            viewAll.addEventListener('click', function () { setActiveViewButton(this); renderClients('all'); });
+
+            resetDay.addEventListener('click', () => {
+                if (confirm('Reset today\'s count?')) {
+                    const today = new Date().toDateString();
+                    state.clients = state.clients.filter(client => new Date(client.date).toDateString() !== today);
+                    saveState(); renderClients(); updateStats();
+                }
+            });
+
+            exportData.addEventListener('click', exportClientData);
+            simulateClient.addEventListener('click', simulateRandomClient);
+            clearAll.addEventListener('click', () => {
+                if (confirm('Delete ALL history?')) {
+                    state.clients = []; saveState(); renderClients(); updateStats();
+                }
+            });
+        }
+
+        function calculateCommission(amount, split, serviceCount, isShared) {
+            const baseAmount = isShared ? amount - split : amount;
+            // Simplified logic based on provided code: count/3 roughly scales commission
+            // If service count is 0, commission is 0
+            if (serviceCount === 0) return 0;
+            const multiplier = serviceCount / 3;
+            return Math.round(baseAmount * 0.4 * multiplier);
+        }
+
+        function setActiveViewButton(activeButton) {
+            document.querySelectorAll('#viewToday, #viewWeek, #viewAll').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                btn.classList.add('text-slate-500', 'hover:text-indigo-600');
+            });
+            activeButton.classList.remove('text-slate-500', 'hover:text-indigo-600');
+            activeButton.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        }
+
+        // Render clients (Main Dashboard Table)
+        function renderClients(filter = 'today') {
+            const now = new Date();
+            let filteredClients = [];
+
+            if (filter === 'today') {
+                const today = now.toDateString();
+                filteredClients = state.clients.filter(client => new Date(client.date).toDateString() === today);
+            } else if (filter === 'week') {
+                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                filteredClients = state.clients.filter(client => new Date(client.date) >= oneWeekAgo);
+            } else {
+                filteredClients = [...state.clients];
+            }
+
+            clientTableBody.innerHTML = '';
+            if (filteredClients.length === 0) {
+                clientTableBody.appendChild(noClientsRow.cloneNode(true));
+                return;
+            }
+
+            filteredClients.forEach(client => {
+                const row = document.createElement('tr');
+                row.className = 'group transition-all hover:bg-white hover:shadow-lg rounded-xl block md:table-row relative mb-4 md:mb-0 border border-transparent md:border-0 bg-white/40 md:bg-transparent cursor-pointer';
+                row.onclick = (e) => {
+                    if (!e.target.closest('.delete-client')) openClientDetails(client);
+                };
+
+                const dateObj = new Date(client.date);
+                const dateStr = dateObj.toLocaleDateString();
+                const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const sharedHtml = client.isShared
+                    ? `<span class="ml-2 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Split w/ ${client.colleagueName || 'Team'}</span>`
+                    : '';
+
+                row.innerHTML = `
+                    <td class="block md:table-cell p-4 md:py-4 md:px-4">
+                        <div class="flex items-center md:block">
+                            <span class="md:hidden text-xs font-bold text-gray-400 uppercase w-20">Client</span>
+                            <div>
+                                <div class="font-bold text-slate-700">${client.name}</div>
+                                ${sharedHtml}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="block md:table-cell p-4 md:py-4 md:px-4 border-t border-slate-100 md:border-0">
+                         <div class="flex items-center md:block">
+                            <span class="md:hidden text-xs font-bold text-gray-400 uppercase w-20">Style</span>
+                            <div class="text-sm text-slate-600 font-medium">${client.style || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td class="block md:table-cell p-4 md:py-4 md:px-4 border-t border-slate-100 md:border-0">
+                        <div class="flex items-center md:block">
+                            <span class="md:hidden text-xs font-bold text-gray-400 uppercase w-20">Total</span>
+                            <div>
+                                <div class="font-medium text-slate-600">${client.serviceAmount}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="block md:table-cell p-4 md:py-4 md:px-4 border-t border-slate-100 md:border-0 bg-indigo-50/50 md:bg-transparent rounded-b-xl md:rounded-none">
+                        <div class="flex items-center md:block">
+                            <span class="md:hidden text-xs font-bold text-gray-400 uppercase w-20">Earned</span>
+                            <div>
+                                <div class="font-bold text-indigo-600 text-lg">${client.commission}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="hidden md:table-cell py-4 px-4 text-slate-400 text-xs font-medium">
+                        <div>${dateStr}</div>
+                        <div>${timeStr}</div>
+                    </td>
+                    <td class="absolute top-4 right-4 md:static md:py-4 md:px-4 text-right">
+                        <button class="delete-client w-8 h-8 rounded-full bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center" data-id="${client.id}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                `;
+                clientTableBody.appendChild(row);
+            });
+
+            document.querySelectorAll('.delete-client').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteClient(id);
+                });
+            });
+        }
+
+        // Render "All Clients" Modal List
+        function renderFullClientList(searchTerm = '') {
+            fullClientList.innerHTML = '';
+            const term = searchTerm.toLowerCase();
+
+            const filtered = state.clients.filter(c =>
+                c.name.toLowerCase().includes(term) ||
+                (c.style && c.style.toLowerCase().includes(term))
+            );
+
+            if (filtered.length === 0) {
+                fullClientList.innerHTML = '<p class="text-center text-slate-400 mt-10">No clients found.</p>';
+                return;
+            }
+
+            filtered.forEach(client => {
+                const date = new Date(client.date).toLocaleDateString();
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer rounded-xl';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                            ${client.name.charAt(0)}
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">${client.name}</p>
+                            <p class="text-xs text-slate-500">${client.style || 'No Style'}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-indigo-600">${client.commission} KSH</p>
+                        <p class="text-xs text-slate-400">${date}</p>
+                    </div>
+                `;
+                div.onclick = () => {
+                    allClientsModal.classList.add('hidden');
+                    openClientDetails(client);
+                };
+                fullClientList.appendChild(div);
+            });
+        }
+
+        // ================= CLIENT DETAILS LOGIC =================
+        function openClientDetails(client) {
+            // Find all records for this client name to build history
+            const clientHistory = state.clients.filter(c => c.name.toLowerCase() === client.name.toLowerCase());
+
+            // Get the latest record for up-to-date profile info
+            // (We assume the record passed in might not be the absolute latest if clicked from history list)
+            const latestProfile = clientHistory[0];
+
+            // Calculate Stats
+            const totalVisits = clientHistory.length;
+            const totalSpent = clientHistory.reduce((sum, c) => sum + c.serviceAmount, 0);
+
+            // 1. Header Info
+            document.getElementById('detailAvatar').textContent = latestProfile.name.charAt(0).toUpperCase();
+            document.getElementById('detailName').textContent = latestProfile.name;
+            document.getElementById('detailVisitCount').textContent = totalVisits;
+            document.getElementById('detailTotalSpent').textContent = totalSpent.toLocaleString();
+
+            // 2. Render Hair Profile Functions (Inline Editing Logic)
+            renderInlineEdit('hairType', 'Type', latestProfile);
+            renderInlineEdit('hairThickness', 'Thickness', latestProfile);
+            renderInlineEdit('hairColor', 'Color', latestProfile);
+
+            // 3. Render Hair Health (Star Rating)
+            renderStarRating(latestProfile);
+
+            // 4. Render Products
+            renderProducts(latestProfile);
+
+            // 5. Render History List
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            clientHistory.forEach(h => {
+                const d = new Date(h.date);
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-3 border border-slate-100 rounded-xl hover:bg-slate-50';
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-slate-700 text-sm">${h.style || 'Unspecified Style'}</p>
+                        <p class="text-xs text-slate-400">${d.toLocaleDateString()}</p>
+                    </div>
+                    <span class="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">${h.serviceAmount} KSH</span>
+                `;
+                historyList.appendChild(item);
+            });
+
+            // 6. Style Suggestion Logic
+            const suggestionEl = document.getElementById('styleSuggestion');
+            const styles = clientHistory.map(h => h.style).filter(s => s);
+            const uniqueStyles = [...new Set(styles)];
+
+            if (uniqueStyles.length === 1 && totalVisits > 2) {
+                suggestionEl.innerHTML = `Client loves <b>${uniqueStyles[0]}</b>! Suggest a slight variation or color change to keep it fresh, or recommend maintenance products for this specific style.`;
+            } else if (totalVisits > 3) {
+                suggestionEl.innerHTML = `Client likes to switch things up (${uniqueStyles.slice(0, 3).join(', ')}). Suggest the latest trending style from TikTok!`;
+            } else {
+                suggestionEl.innerHTML = `Still getting to know the client's hair. Ask about their daily routine to recommend the best low-maintenance style.`;
+            }
+
+            // 7. WhatsApp Logic
+            const phoneInput = document.getElementById('clientPhone');
+            phoneInput.value = latestProfile.phoneNumber || '';
+            phoneInput.onchange = (e) => updateClientField(latestProfile.name, 'phoneNumber', e.target.value);
+
+            document.getElementById('sendMaintenance').onclick = () => {
+                const num = phoneInput.value;
+                if (!num) { alert('Please enter a phone number first'); return; }
+
+                // Save number if changed
+                updateClientField(latestProfile.name, 'phoneNumber', num);
+
+                const msg = `Hi ${latestProfile.name}! It's your stylist. Just checking in on your hair. Remember to moisturize and wrap it at night to keep that ${latestProfile.style || 'style'} looking fresh! Let me know when you're ready for your next booking.`;
+                window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
+            // Show Modal
+            clientDetailsModal.classList.remove('hidden');
+        }
+
+        // Helper: Render Inline Edit Fields
+        function renderInlineEdit(fieldKey, label, clientData) {
+            const container = document.getElementById(fieldKey + 'Container');
+            const val = clientData[fieldKey];
+
+            if (val) {
+                container.innerHTML = `<span class="cursor-pointer hover:text-indigo-600 border-b border-dashed border-slate-300" title="Click to edit">${val}</span>`;
+                container.onclick = () => {
+                    const input = prompt(`Update ${label}:`, val);
+                    if (input) updateClientField(clientData.name, fieldKey, input);
+                };
+            } else {
+                container.innerHTML = `<button class="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-200 transition">Add ${label}</button>`;
+                container.onclick = () => {
+                    const input = prompt(`Enter Client's Hair ${label}:`);
+                    if (input) updateClientField(clientData.name, fieldKey, input);
+                };
+            }
+        }
+
+        // Helper: Render Star Rating
+        function renderStarRating(clientData) {
+            const container = document.getElementById('hairHealthContainer');
+            const rating = clientData.hairHealth || 0;
+            const healthBar = document.getElementById('healthBar');
+
+            // Set bar width based on rating (0-5 => 0-100%)
+            healthBar.style.width = `${(rating / 5) * 100}%`;
+            healthBar.className = `h-full transition-all duration-1000 ${rating < 3 ? 'bg-red-400' : (rating < 5 ? 'bg-yellow-400' : 'bg-green-500')}`;
+
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += `<i class="fas fa-star ${i <= rating ? 'active' : 'inactive'}" data-val="${i}"></i>`;
+            }
+
+            container.innerHTML = html;
+
+            // Click to rate
+            container.querySelectorAll('i').forEach(star => {
+                star.onclick = function () {
+                    const val = parseInt(this.getAttribute('data-val'));
+                    updateClientField(clientData.name, 'hairHealth', val);
+                }
+            });
+        }
+
+        // Helper: Render Products
+        function renderProducts(clientData) {
+            const container = document.getElementById('productsContainer');
+            const products = clientData.products || [];
+
+            let html = products.map(p => `<span class="text-xs bg-white border border-slate-200 text-slate-600 px-2 py-1 rounded-lg">${p}</span>`).join('');
+
+            html += `<button id="addProductBtn" class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-lg hover:bg-slate-200"><i class="fas fa-plus"></i> Add</button>`;
+
+            container.innerHTML = html;
+
+            document.getElementById('addProductBtn').onclick = () => {
+                const input = prompt("Enter product name (comma separate for multiple):");
+                if (input) {
+                    const newProds = input.split(',').map(s => s.trim()).filter(s => s);
+                    const updatedProds = [...new Set([...products, ...newProds])]; // Unique
+                    updateClientField(clientData.name, 'products', updatedProds);
+                }
+            };
+        }
+
+        // Universal Updater: Updates ALL records with the same client name
+        function updateClientField(clientName, key, value) {
+            // Update all instances of this client in the array
+            state.clients = state.clients.map(c => {
+                if (c.name.toLowerCase() === clientName.toLowerCase()) {
+                    return { ...c, [key]: value };
+                }
+                return c;
+            });
+
+            saveState();
+
+            // Re-render details to show changes immediately
+            const updatedClient = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+            openClientDetails(updatedClient);
+        }
+
+        // ================= STANDARD FUNCTIONS =================
+        function deleteClient(id) {
+            if (confirm('Delete this record?')) {
+                state.clients = state.clients.filter(client => client.id !== id);
+                saveState();
+                renderClients();
+                updateStats();
+                showNotification('Deleted', 'Record removed.');
+            }
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const today = now.toDateString();
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            const todayClients = state.clients.filter(client => new Date(client.date).toDateString() === today);
+            const weekClients = state.clients.filter(client => new Date(client.date) >= oneWeekAgo);
+
+            const todayTotal = todayClients.reduce((sum, client) => sum + client.serviceAmount, 0);
+            const todayCommission = todayClients.reduce((sum, client) => sum + client.commission, 0);
+
+            const weekTotal = weekClients.reduce((sum, client) => sum + client.serviceAmount, 0);
+            const weekCommission = weekClients.reduce((sum, client) => sum + client.commission, 0);
+
+            const sharedClients = state.clients.filter(client => client.isShared).length;
+
+            todayCount.textContent = todayClients.length;
+            todayEarnings.textContent = todayCommission.toLocaleString();
+            weekCount.textContent = weekClients.length;
+            weekEarnings.textContent = weekCommission.toLocaleString();
+            expectedCommission.textContent = weekCommission.toLocaleString();
+            sharedCount.textContent = sharedClients;
+            weeklyTotalClients.textContent = weekClients.length;
+            weeklyTotalEarnings.textContent = weekTotal.toLocaleString() + ' KSH';
+            weeklyCommission.textContent = weekCommission.toLocaleString() + ' KSH';
+            paydayAmount.textContent = weekCommission.toLocaleString() + ' KSH';
+        }
+
+        function resetForm() {
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientStyle').value = '';
+            document.getElementById('serviceAmount').value = 800;
+            document.getElementById('servicesPerformed').value = 'wash,retouch,style';
+            document.getElementById('sharedNo').checked = true;
+            document.getElementById('splitAmount').value = 0;
+            document.getElementById('colleagueName').value = '';
+            splitSection.classList.add('hidden');
+            serviceOptions.forEach(option => {
+                option.classList.add('border-indigo-500', 'bg-indigo-50');
+            });
+        }
+
+        function showNotification(title, message) {
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            notification.classList.remove('hidden');
+            setTimeout(() => { notification.classList.add('hidden'); }, 5000);
+        }
+
+        function startReminderCheck() {
+            setInterval(() => {
+                if (!state.reminderEnabled) return;
+                const now = new Date();
+                if (state.lastRecordTime) {
+                    const hoursSinceLastRecord = (now - state.lastRecordTime) / (1000 * 60 * 60);
+                    if (hoursSinceLastRecord >= state.reminderFrequency) {
+                        if (!state.lastReminderTime || (now - state.lastReminderTime) / (1000 * 60 * 60) >= 1) {
+                            showNotification('Time to check in?', `It's been ${state.reminderFrequency} hours since your last record.`);
+                            state.lastReminderTime = now;
+                            saveState();
+                        }
+                    }
+                }
+            }, 60000);
+        }
+
+        function exportClientData() {
+            if (state.clients.length === 0) { showNotification('Empty', 'Nothing to export yet.'); return; }
+            const headers = ['Date', 'Client Name', 'Style', 'Amount', 'Services', 'Shared', 'Colleague', 'Split', 'Commission', 'Phone'];
+            const csvRows = [
+                headers.join(','),
+                ...state.clients.map(client => [
+                    new Date(client.date).toLocaleDateString(),
+                    client.name,
+                    client.style || '',
+                    client.serviceAmount,
+                    client.servicesPerformed.join('+'),
+                    client.isShared ? 'Yes' : 'No',
+                    client.colleagueName || '',
+                    client.splitAmount,
+                    client.commission,
+                    client.phoneNumber || ''
+                ].join(','))
+            ];
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `stylist-export-${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        function simulateRandomClient() {
+            const names = ['Mary', 'John', 'Sarah', 'David', 'Linda'];
+            const styles = ['Box Braids', 'Cornrows', 'Dreadlocks', 'Weave', 'Silk Press'];
+            const isShared = Math.random() < 0.2;
+
+            document.getElementById('clientName').value = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('clientStyle').value = styles[Math.floor(Math.random() * styles.length)];
+            document.getElementById('serviceAmount').value = 800 + Math.floor(Math.random() * 1200);
+
+            if (isShared) {
+                document.getElementById('sharedYes').checked = true;
+                document.getElementById('colleagueName').value = 'Jane Doe';
+                splitSection.classList.remove('hidden');
+            } else {
+                document.getElementById('sharedNo').checked = true;
+                splitSection.classList.add('hidden');
+            }
+            showNotification('Demo Data', 'Form filled.');
+        }
+
+        window.onload = function () {
+            serviceOptions.forEach(option => option.classList.add('border-indigo-500', 'bg-indigo-50'));
+            document.querySelectorAll('.stat-card').forEach((card, index) => setTimeout(() => card.classList.add('opacity-100'), index * 100));
+        };
+    </script>
+</body>
+
+</html>
