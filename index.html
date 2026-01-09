@@ -13,6 +13,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#6366f1">
+
     <script>
         tailwind.config = {
             theme: {
@@ -1925,6 +1936,180 @@
             if (state.reminderEnabled) {
                 showNotification('Test Notification', 'This is a test of the reminder system.');
                 showPhoneNotification('Stylist Tracker Test', 'This is a test notification from your stylist app!');
+            }
+        });
+    </script>
+
+    <script>
+        // Register Service Worker for background notifications
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(function (registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(function (error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        // Function to show advanced notification with sound and vibration
+        function showAdvancedNotification(title, message) {
+            // 1. Check Notification permission
+            if (!("Notification" in window)) {
+                console.log("Browser doesn't support notifications");
+                return;
+            }
+
+            // 2. Request permission if needed
+            if (Notification.permission === "default") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        createAdvancedNotification(title, message);
+                    }
+                });
+            } else if (Notification.permission === "granted") {
+                createAdvancedNotification(title, message);
+            }
+        }
+
+        function createAdvancedNotification(title, message) {
+            // Create notification with options
+            const options = {
+                body: message,
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366f1"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
+                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366f1"><circle cx="12" cy="12" r="10"/></svg>',
+                tag: 'stylist-reminder',
+                renotify: true,
+                requireInteraction: true, // Stay until user interacts
+                actions: [
+                    {
+                        action: 'record',
+                        title: '📝 Record Now'
+                    },
+                    {
+                        action: 'snooze',
+                        title: '⏰ Snooze 5 min'
+                    }
+                ],
+                vibrate: [200, 100, 200, 100, 200], // Vibration pattern
+                silent: false // Make sound
+            };
+
+            // Create and show notification
+            const notification = new Notification(title, options);
+
+            // Play custom notification sound
+            playNotificationSound();
+
+            // Vibrate if supported (especially for mobile)
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+
+            // Handle notification clicks
+            notification.onclick = function (event) {
+                event.preventDefault();
+                window.focus();
+                notification.close();
+
+                // Optional: Open your app or specific section
+                if (window.location.href.includes('index.html')) {
+                    // Already in app
+                    document.getElementById('clientName').focus();
+                }
+            };
+
+            // Handle action buttons
+            notification.onactionclick = function (event) {
+                if (event.action === 'record') {
+                    window.focus();
+                    document.getElementById('clientName').focus();
+                } else if (event.action === 'snooze') {
+                    // Snooze logic - delay next reminder by 5 minutes
+                    state.lastReminderTime = new Date(Date.now() + 5 * 60 * 1000);
+                    saveState();
+                    showNotification('Snoozed', 'Reminder snoozed for 5 minutes');
+                }
+                notification.close();
+            };
+        }
+
+        // Enhanced notification sound function
+        function playNotificationSound() {
+            try {
+                // Try to play a more noticeable sound
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Create a pleasant but noticeable notification sound
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Set sound properties
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+
+            } catch (e) {
+                // Fallback to simple audio if Web Audio API fails
+                try {
+                    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3');
+                    audio.volume = 0.7;
+                    audio.play().catch(e => console.log("Audio play failed:", e));
+                } catch (e2) {
+                    console.log("All sound methods failed");
+                }
+            }
+        }
+
+        // Update your startReminderCheck function
+        function startReminderCheck() {
+            setInterval(() => {
+                if (!state.reminderEnabled) return;
+                const now = new Date();
+                if (state.lastRecordTime) {
+                    const minutesSinceLastRecord = (now - state.lastRecordTime) / (1000 * 60);
+                    if (minutesSinceLastRecord >= state.reminderFrequency) {
+                        if (!state.lastReminderTime || (now - state.lastReminderTime) / (1000 * 60) >= state.reminderFrequency) {
+                            // Show BOTH types of notifications
+                            const timeText = state.reminderFrequency < 60 ?
+                                `${state.reminderFrequency} minutes` : '1 hour';
+
+                            // In-app notification
+                            showNotification('Time to check in?', `It's been ${timeText} since your last record.`);
+
+                            // System notification (works even when tab is in background)
+                            showAdvancedNotification('⏰ Stylist Reminder',
+                                `It's been ${timeText} since your last record. Check in now!`);
+
+                            state.lastReminderTime = now;
+                            saveState();
+                        }
+                    }
+                }
+            }, 60000); // Check every minute
+        }
+
+        // Update testReminder button
+        testReminder.addEventListener('click', function () {
+            if (state.reminderEnabled) {
+                showNotification('Test Notification', 'This is a test of the reminder system.');
+                showAdvancedNotification('🔔 Stylist Tracker',
+                    'This is a test notification from your stylist app!');
+            }
+        });
+
+        // Add visibility change listener to show notifications when app is in background
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                console.log('App is in background - notifications will work');
             }
         });
     </script>
