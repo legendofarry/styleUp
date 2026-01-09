@@ -340,38 +340,45 @@
                         </div>
 
                         <form id="clientForm">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div class="group">
-                                    <label
-                                        class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
-                                        for="clientName">
-                                        Client Name
-                                    </label>
-                                    <div class="relative">
-                                        <i
-                                            class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
-                                        <input type="text" id="clientName"
-                                            class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
-                                            placeholder="Client Name">
-                                    </div>
-                                </div>
-
-                                <div class="group">
-                                    <label
-                                        class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
-                                        for="clientStyle">
-                                        Style
-                                    </label>
-                                    <div class="relative">
-                                        <i
-                                            class="fas fa-feather absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
-                                        <input type="text" id="clientStyle"
-                                            class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
-                                            placeholder="e.g. Braids, Weave..." required>
-                                    </div>
+                            <!-- Client Name Input -->
+                            <div class="group mb-6">
+                                <label class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
+                                    for="clientName">
+                                    Client Name
+                                </label>
+                                <div class="relative">
+                                    <i
+                                        class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+                                    <input type="text" id="clientName"
+                                        class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
+                                        placeholder="Client Name" required>
                                 </div>
                             </div>
 
+                            <!-- NEW: Modern Style Selector (Cards UI) -->
+                            <div class="mb-6">
+                                <label
+                                    class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-3 pl-1">
+                                    Select Hair Style
+                                </label>
+
+                                <!-- Hidden Input to store value for the logic -->
+                                <input type="hidden" id="clientStyle" required>
+
+                                <!-- Category Tabs -->
+                                <div class="flex space-x-2 overflow-x-auto pb-2 mb-2 scrollbar-hide"
+                                    id="styleCategories">
+                                    <!-- Tabs injected via JS -->
+                                </div>
+
+                                <!-- Style Cards Grid -->
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar"
+                                    id="styleCardsGrid">
+                                    <!-- Cards injected via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Amount Input -->
                             <div class="group mb-8">
                                 <label class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
                                     for="serviceAmount">
@@ -386,44 +393,46 @@
                                 </div>
                             </div>
 
+                            <!-- Services Done (Checkboxes) -->
                             <div class="mb-8">
                                 <label
                                     class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-4 pl-1">Select
                                     Services Done</label>
                                 <div class="grid grid-cols-3 gap-3 sm:gap-4">
-                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                    <div class="service-option border-indigo-500 bg-indigo-50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-24 shadow-sm hover:shadow-md transition-all border"
                                         data-service="wash">
                                         <div
-                                            class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 text-blue-500">
-                                            <i class="fas fa-shower text-lg"></i>
+                                            class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mb-2 text-blue-600">
+                                            <i class="fas fa-shower text-sm"></i>
                                         </div>
-                                        <p class="font-bold text-sm text-slate-700">Washing</p>
+                                        <p class="font-bold text-xs text-slate-700">Washing</p>
                                     </div>
 
-                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                    <div class="service-option border-indigo-500 bg-indigo-50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-24 shadow-sm hover:shadow-md transition-all border"
                                         data-service="retouch">
                                         <div
-                                            class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center mb-2 text-pink-500">
-                                            <i class="fas fa-paint-brush text-lg"></i>
+                                            class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center mb-2 text-pink-600">
+                                            <i class="fas fa-paint-brush text-sm"></i>
                                         </div>
-                                        <p class="font-bold text-sm text-slate-700">Retouch</p>
+                                        <p class="font-bold text-xs text-slate-700">Retouch</p>
                                     </div>
 
-                                    <div class="service-option bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-28 sm:h-32 shadow-sm hover:shadow-md"
+                                    <div class="service-option border-indigo-500 bg-indigo-50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer h-24 shadow-sm hover:shadow-md transition-all border"
                                         data-service="style">
                                         <div
-                                            class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-2 text-purple-500">
-                                            <i class="fas fa-cut text-lg"></i>
+                                            class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mb-2 text-purple-600">
+                                            <i class="fas fa-cut text-sm"></i>
                                         </div>
-                                        <p class="font-bold text-sm text-slate-700">Styling</p>
+                                        <p class="font-bold text-xs text-slate-700">Styling</p>
                                     </div>
                                 </div>
                                 <input type="hidden" id="servicesPerformed" value="wash,retouch,style">
                             </div>
 
+                            <!-- Split Toggle -->
                             <div class="mb-8 bg-slate-50 rounded-2xl p-5 border border-slate-100">
                                 <div class="flex items-center justify-between mb-4 sm:mb-0">
-                                    <span class="text-sm font-bold text-slate-700">Split</span>
+                                    <span class="text-sm font-bold text-slate-700">Split Commission?</span>
                                     <div class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
                                         <label class="cursor-pointer relative">
                                             <input type="radio" id="sharedNo" name="shared" value="no" checked
@@ -442,31 +451,26 @@
                                     </div>
                                 </div>
 
-                                <div id="splitSection" class="mt-4 hidden animate-slide-up space-y-4">
+                                <div id="splitSection"
+                                    class="mt-4 hidden animate-slide-up space-y-4 pt-4 border-t border-slate-200">
                                     <div>
                                         <label
-                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2"
-                                            for="colleagueName">
-                                            With Which Colleague?
-                                        </label>
-                                        <input type="text" id="colleagueName" placeholder="Colleague Name"
-                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700">
+                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Colleague
+                                            Name</label>
+                                        <input type="text" id="colleagueName" placeholder="e.g. Jane"
+                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700 text-sm">
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2"
-                                            for="splitAmount">
-                                            Split Amount (KSH)
-                                        </label>
-                                        <input type="number" id="splitAmount" min="0"
-                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700">
-                                        <p class="text-slate-400 text-xs mt-2 pl-1"><i
-                                                class="fas fa-info-circle mr-1"></i>
-                                            Deducted before calculation</p>
+                                            class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Deduction
+                                            Amount (KSH)</label>
+                                        <input type="number" id="splitAmount" min="0" placeholder="0"
+                                            class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700 text-sm">
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Submit Button -->
                             <button type="submit"
                                 class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all active:scale-95 flex items-center justify-center gap-2 group">
                                 <i class="fas fa-plus-circle text-xl group-hover:rotate-90 transition-transform"></i>
@@ -827,23 +831,16 @@
                         <i class="fas fa-times text-white"></i>
                     </button>
 
-                    <div class="text-center p-6">
+                    <div class="text-center p-6 flex flex-col items-center justify-center">
                         <i class="fab fa-tiktok text-6xl text-pink-500 mb-4 animate-pulse"></i>
-                        <h3 class="text-xl font-bold mb-2">Style Inspiration</h3>
-                        <p class="text-slate-400 text-sm mb-6">Check out my latest work on TikTok for ideas!</p>
                         <a href="https://www.tiktok.com/@natty_dreadlockshop" target="_blank"
                             class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105">
                             Open TikTok Profile
                         </a>
                     </div>
-
-                    <div class="absolute bottom-6 text-xs text-slate-600">
-                        Shows profile styles
-                    </div>
                 </div>
             </div>
         </div>
-
 
         <!-- Premium Notification Toast -->
         <div id="notification" class="fixed top-6 right-6 z-[60] hidden animate-slide-up">
@@ -1551,6 +1548,144 @@
             document.querySelectorAll('.stat-card').forEach((card, index) => setTimeout(() => card.classList.add('opacity-100'), index * 100));
         };
     </script>
+
+    <script>
+        // Data Structure for Styles
+        const styleData = {
+            'Basic': [
+                { name: "Starter Locs", price: 800, icon: "fa-seedling" },
+                { name: "Retouch", price: 600, icon: "fa-spa" },
+                { name: "Palm Roll", price: 700, icon: "fa-hand-sparkles" },
+                { name: "Interlocking", price: 1000, icon: "fa-link" },
+                { name: "Wash & Retwist", price: 1200, icon: "fa-soap" }
+            ],
+            'Updo': [
+                { name: "Loc Bun", price: 1000, icon: "fa-circle-notch" },
+                { name: "High Ponytail", price: 900, icon: "fa-horse-head" },
+                { name: "Barrel Updo", price: 1500, icon: "fa-layer-group" },
+                { name: "Loc Crown", price: 1600, icon: "fa-crown" },
+                { name: "Half-Up", price: 1200, icon: "fa-arrow-up" }
+            ],
+            'Twists': [
+                { name: "2-Strand Twists", price: 1200, icon: "fa-dna" },
+                { name: "Invisible Locs", price: 1400, icon: "fa-eye-slash" },
+                { name: "Soft Locs", price: 1800, icon: "fa-feather" },
+                { name: "Butterfly Locs", price: 2000, icon: "fa-b" },
+                { name: "Passion Twists", price: 2200, icon: "fa-fire" }
+            ],
+            'Creative': [
+                { name: "Barrel Twists", price: 1800, icon: "fa-wave-square" },
+                { name: "Loc Petals", price: 2000, icon: "fa-leaf" },
+                { name: "Colored Style", price: 2500, icon: "fa-palette" },
+                { name: "Loc Bob", price: 1700, icon: "fa-user-tie" },
+                { name: "Custom Design", price: 3000, icon: "fa-magic" }
+            ]
+        };
+
+        const categoriesContainer = document.getElementById('styleCategories');
+        const cardsContainer = document.getElementById('styleCardsGrid');
+        const hiddenStyleInput = document.getElementById('clientStyle');
+        const priceInput = document.getElementById('serviceAmount');
+
+        let currentCategory = 'Basic';
+        let selectedStyleName = '';
+
+        function initStyleSelector() {
+            renderCategories();
+            renderCards(currentCategory);
+        }
+
+        // Render Tab Buttons
+        function renderCategories() {
+            categoriesContainer.innerHTML = '';
+            Object.keys(styleData).forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button'; // Prevent form submit
+                btn.className = `px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${currentCategory === cat
+                        ? 'bg-slate-800 text-white shadow-md'
+                        : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-100'
+                    }`;
+                btn.textContent = cat;
+                btn.onclick = () => {
+                    currentCategory = cat;
+                    renderCategories(); // Re-render to update active state
+                    renderCards(cat);
+                };
+                categoriesContainer.appendChild(btn);
+            });
+        }
+
+        // Render Style Cards
+        function renderCards(category) {
+            cardsContainer.innerHTML = '';
+            const styles = styleData[category];
+
+            styles.forEach(style => {
+                const card = document.createElement('div');
+                const isSelected = selectedStyleName === style.name;
+
+                card.className = `relative p-3 rounded-2xl border-2 cursor-pointer transition-all duration-200 group flex flex-col justify-between min-h-[100px] ${isSelected
+                        ? 'border-indigo-500 bg-indigo-50/50 shadow-md'
+                        : 'border-transparent bg-white shadow-sm hover:border-indigo-200 hover:shadow-md'
+                    }`;
+
+                card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-indigo-200 text-indigo-700' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-500'} transition-colors">
+                        <i class="fas ${style.icon} text-sm"></i>
+                    </div>
+                    ${isSelected ? '<i class="fas fa-check-circle text-indigo-500 text-sm"></i>' : ''}
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-700 text-xs leading-tight mb-1">${style.name}</h4>
+                    <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100 group-hover:border-indigo-100 group-hover:text-indigo-500 transition-colors">
+                        ${style.price} KSH
+                    </span>
+                </div>
+            `;
+
+                card.onclick = () => {
+                    selectedStyleName = style.name;
+                    hiddenStyleInput.value = style.name; // Update logic input
+                    priceInput.value = style.price; // Auto-update price
+                    renderCards(currentCategory); // Re-render for selection styling
+
+                    // Optional: Slight shake animation on price to indicate update
+                    priceInput.parentElement.classList.add('animate-pulse');
+                    setTimeout(() => priceInput.parentElement.classList.remove('animate-pulse'), 500);
+                };
+
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initStyleSelector);
+
+        // Hook into the existing "Reset Form" logic to clear selection visually
+        const originalResetForm = window.resetForm; // Assuming resetForm is global from previous code
+        if (typeof originalResetForm === 'function') {
+            window.resetForm = function () {
+                originalResetForm(); // Run original logic
+                selectedStyleName = ''; // Clear visual selection
+                hiddenStyleInput.value = '';
+                renderCards(currentCategory);
+            }
+        }
+    </script>
+
+    <script>
+        const styleDropdown = document.getElementById("clientStyle");
+
+        styleDropdown.addEventListener("change", () => {
+            const selected = styleDropdown.options[styleDropdown.selectedIndex];
+            const price = selected.dataset.price;
+            if (price) {
+                amountInput.value = price;
+            }
+        });
+    </script>
+
 </body>
 
 </html>
