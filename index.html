@@ -355,8 +355,20 @@
                                 </div>
                             </div>
 
+                            <!-- NEW: Wash Only Checkbox -->
+                            <div class="mb-6 flex items-center bg-white/80 p-4 rounded-2xl border border-indigo-100 shadow-sm hover:border-indigo-300 transition-all cursor-pointer"
+                                onclick="document.getElementById('washOnlyCheckbox').click()">
+                                <input type="checkbox" id="washOnlyCheckbox"
+                                    class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 cursor-pointer"
+                                    onclick="event.stopPropagation()">
+                                <label for="washOnlyCheckbox"
+                                    class="ml-3 font-bold text-slate-700 text-sm cursor-pointer select-none">
+                                    Quick Service: Wash Only (200 KSH)
+                                </label>
+                            </div>
+
                             <!-- NEW: Modern Style Selector (Cards UI) -->
-                            <div class="mb-6">
+                            <div class="mb-6 transition-opacity duration-300" id="styleSelectorWrapper">
                                 <label
                                     class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-3 pl-1">
                                     Select Hair Style
@@ -961,11 +973,92 @@
             localStorage.setItem('stylistTrackerState', JSON.stringify(state));
         }
 
+        // Validate Split Logic: Cannot have split=Yes if ALL services (3) are selected
+        function validateSplitConstraint() {
+            const services = servicesPerformedInput.value.split(',').filter(s => s);
+            const yesRadio = document.getElementById('sharedYes');
+            const noRadio = document.getElementById('sharedNo');
+            const washOnlyChecked = document.getElementById('washOnlyCheckbox').checked;
+
+            // NEW: If wash only is checked, split is forced NO
+            if (washOnlyChecked) {
+                if (yesRadio.checked) {
+                    noRadio.checked = true;
+                    splitSection.classList.add('hidden');
+                }
+                yesRadio.disabled = true;
+                yesRadio.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            // Normal logic for 3 services
+            if (services.length === 3) {
+                // All services done by one person -> No Split allowed
+                if (yesRadio.checked) {
+                    noRadio.checked = true;
+                    splitSection.classList.add('hidden');
+                    showNotification('Note', 'Cannot split commission if you did all services yourself.');
+                }
+                yesRadio.disabled = true;
+                yesRadio.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                yesRadio.disabled = false;
+                yesRadio.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
         // Setup event listeners
         function setupEventListeners() {
+            // NEW: Wash Only Checkbox Logic
+            const washOnlyCb = document.getElementById('washOnlyCheckbox');
+            const styleSelectorWrapper = document.getElementById('styleSelectorWrapper');
+
+            washOnlyCb.addEventListener('change', function () {
+                if (this.checked) {
+                    // 1. Price becomes 200
+                    document.getElementById('serviceAmount').value = 200;
+
+                    // 2. Disable Select Style Dropdown (Cards)
+                    styleSelectorWrapper.classList.add('opacity-50', 'pointer-events-none');
+                    document.getElementById('clientStyle').value = "Washing Only";
+
+                    // 3. Mark Washing, Unmark others
+                    servicesPerformedInput.value = 'wash';
+                    serviceOptions.forEach(opt => {
+                        const svc = opt.getAttribute('data-service');
+                        if (svc === 'wash') {
+                            opt.classList.add('border-indigo-500', 'bg-indigo-50');
+                        } else {
+                            opt.classList.remove('border-indigo-500', 'bg-indigo-50');
+                        }
+                    });
+
+                    // 4. Disable Split Commission
+                    validateSplitConstraint();
+
+                } else {
+                    // Revert
+                    document.getElementById('serviceAmount').value = 800; // Reset to default base
+                    styleSelectorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+                    document.getElementById('clientStyle').value = ""; // Clear style
+
+                    // Reset services to default all
+                    servicesPerformedInput.value = 'wash,retouch,style';
+                    serviceOptions.forEach(opt => {
+                        opt.classList.add('border-indigo-500', 'bg-indigo-50');
+                    });
+
+                    // Check validation again
+                    validateSplitConstraint();
+                }
+            });
+
             // Service selection
             serviceOptions.forEach(option => {
                 option.addEventListener('click', function () {
+                    // Prevent changing services if Wash Only is checked
+                    if (document.getElementById('washOnlyCheckbox').checked) return;
+
                     const service = this.getAttribute('data-service');
                     let currentServices = servicesPerformedInput.value.split(',');
 
@@ -979,13 +1072,15 @@
                     }
 
                     servicesPerformedInput.value = currentServices.filter(s => s).join(',');
+                    validateSplitConstraint(); // Check split validity
                 });
             });
 
             // Shared service toggle
             sharedRadio.forEach(radio => {
                 radio.addEventListener('change', function () {
-                    if (this.value === 'yes') {
+                    validateSplitConstraint(); // Re-validate immediately
+                    if (this.value === 'yes' && !this.disabled) {
                         splitSection.classList.remove('hidden');
                     } else {
                         splitSection.classList.add('hidden');
@@ -1023,20 +1118,26 @@
                 const colleagueName = isShared ? document.getElementById('colleagueName').value : '';
                 const splitAmount = isShared ? parseInt(document.getElementById('splitAmount').value) : 0;
 
+                // Final check to prevent submission if validation failed but was somehow bypassed
+                if (servicesPerformed.length === 3 && isShared) {
+                    showNotification('Error', 'Cannot mark all services done and claim split commission.');
+                    return;
+                }
+
                 // Copy persistent data from previous records of same client
                 const previousRecord = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
 
                 const client = {
                     id: Date.now(),
                     name: clientName,
-                    style: clientStyle,
+                    style: clientStyle || "Washing Only", // Fallback if empty but washed
                     date: new Date().toISOString(),
                     serviceAmount,
                     servicesPerformed,
                     isShared,
                     colleagueName,
                     splitAmount,
-                    commission: calculateCommission(serviceAmount, splitAmount, servicesPerformed.length, isShared),
+                    commission: calculateCommission(serviceAmount, splitAmount, servicesPerformed.length, isShared, clientStyle),
                     // Persistent fields (if exist on prev record, copy them, else defaults)
                     hairType: previousRecord?.hairType || null,
                     hairThickness: previousRecord?.hairThickness || null,
@@ -1056,7 +1157,7 @@
 
                 showNotification(
                     'Client Saved!',
-                    `Added ${clientName} (${clientStyle}). Earned ${client.commission} KSH.`
+                    `Added ${clientName} (${clientStyle || "Wash"}). Earned ${client.commission} KSH.`
                 );
             });
 
@@ -1108,10 +1209,15 @@
             });
         }
 
-        function calculateCommission(amount, split, serviceCount, isShared) {
+        function calculateCommission(amount, split, serviceCount, isShared, styleName) {
             const baseAmount = isShared ? amount - split : amount;
-            // Simplified logic based on provided code: count/3 roughly scales commission
-            // If service count is 0, commission is 0
+
+            // SPECIAL CASE: Washing Only (200ksh) always gets flat 40% (80ksh) regardless of service count multiplier
+            if (styleName === "Washing Only") {
+                return Math.round(baseAmount * 0.4);
+            }
+
+            // Normal Logic
             if (serviceCount === 0) return 0;
             const multiplier = serviceCount / 3;
             return Math.round(baseAmount * 0.4 * multiplier);
@@ -1462,6 +1568,7 @@
         }
 
         function resetForm() {
+            // Reset standard fields
             document.getElementById('clientName').value = '';
             document.getElementById('clientStyle').value = '';
             document.getElementById('serviceAmount').value = 800;
@@ -1473,6 +1580,16 @@
             serviceOptions.forEach(option => {
                 option.classList.add('border-indigo-500', 'bg-indigo-50');
             });
+            // Re-validate split logic on reset
+            const yesRadio = document.getElementById('sharedYes');
+            yesRadio.disabled = true;
+            yesRadio.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // NEW: Reset Wash Only Checkbox state
+            const washOnlyCb = document.getElementById('washOnlyCheckbox');
+            const styleSelectorWrapper = document.getElementById('styleSelectorWrapper');
+            washOnlyCb.checked = false;
+            styleSelectorWrapper.classList.remove('opacity-50', 'pointer-events-none');
         }
 
         function showNotification(title, message) {
@@ -1545,6 +1662,11 @@
 
         window.onload = function () {
             serviceOptions.forEach(option => option.classList.add('border-indigo-500', 'bg-indigo-50'));
+            // Ensure validate logic runs on load (mostly to disable yes radio if all selected by default)
+            const yesRadio = document.getElementById('sharedYes');
+            yesRadio.disabled = true;
+            yesRadio.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+
             document.querySelectorAll('.stat-card').forEach((card, index) => setTimeout(() => card.classList.add('opacity-100'), index * 100));
         };
     </script>
@@ -1602,8 +1724,8 @@
                 const btn = document.createElement('button');
                 btn.type = 'button'; // Prevent form submit
                 btn.className = `px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${currentCategory === cat
-                        ? 'bg-slate-800 text-white shadow-md'
-                        : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-100'
+                    ? 'bg-slate-800 text-white shadow-md'
+                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-100'
                     }`;
                 btn.textContent = cat;
                 btn.onclick = () => {
@@ -1625,8 +1747,8 @@
                 const isSelected = selectedStyleName === style.name;
 
                 card.className = `relative p-3 rounded-2xl border-2 cursor-pointer transition-all duration-200 group flex flex-col justify-between min-h-[100px] ${isSelected
-                        ? 'border-indigo-500 bg-indigo-50/50 shadow-md'
-                        : 'border-transparent bg-white shadow-sm hover:border-indigo-200 hover:shadow-md'
+                    ? 'border-indigo-500 bg-indigo-50/50 shadow-md'
+                    : 'border-transparent bg-white shadow-sm hover:border-indigo-200 hover:shadow-md'
                     }`;
 
                 card.innerHTML = `
@@ -1673,19 +1795,6 @@
             }
         }
     </script>
-
-    <script>
-        const styleDropdown = document.getElementById("clientStyle");
-
-        styleDropdown.addEventListener("change", () => {
-            const selected = styleDropdown.options[styleDropdown.selectedIndex];
-            const price = selected.dataset.price;
-            if (price) {
-                amountInput.value = price;
-            }
-        });
-    </script>
-
 </body>
 
 </html>
