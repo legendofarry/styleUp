@@ -216,7 +216,7 @@
                     <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Styl<span
                             class="text-indigo-600">Up</span></h1>
                 </div>
-                <p class="text-slate-500 font-medium ml-1">Commission & Client Tracker</p>
+                <p class="text-slate-500 font-medium ml-1">Your Personal Stylist Companion</p>
             </div>
 
             <div
@@ -352,7 +352,7 @@
                                             class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
                                         <input type="text" id="clientName"
                                             class="custom-input w-full pl-11 pr-4 py-4 rounded-2xl text-slate-700 font-medium"
-                                            placeholder="Client Name" required>
+                                            placeholder="Client Name">
                                     </div>
                                 </div>
 
@@ -360,7 +360,7 @@
                                     <label
                                         class="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 pl-1"
                                         for="clientStyle">
-                                        Style Used (For History)
+                                        Style
                                     </label>
                                     <div class="relative">
                                         <i
@@ -423,7 +423,7 @@
 
                             <div class="mb-8 bg-slate-50 rounded-2xl p-5 border border-slate-100">
                                 <div class="flex items-center justify-between mb-4 sm:mb-0">
-                                    <span class="text-sm font-bold text-slate-700">Split with teammate?</span>
+                                    <span class="text-sm font-bold text-slate-700">Split</span>
                                     <div class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
                                         <label class="cursor-pointer relative">
                                             <input type="radio" id="sharedNo" name="shared" value="no" checked
@@ -458,7 +458,7 @@
                                             for="splitAmount">
                                             Split Amount (KSH)
                                         </label>
-                                        <input type="number" id="splitAmount" min="0" value="0"
+                                        <input type="number" id="splitAmount" min="0"
                                             class="custom-input w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-700">
                                         <p class="text-slate-400 text-xs mt-2 pl-1"><i
                                                 class="fas fa-info-circle mr-1"></i>
@@ -479,7 +479,7 @@
                 <!-- Recent Activity -->
                 <div class="glass-panel rounded-3xl p-6 sm:p-8">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                        <h2 class="text-xl font-bold text-slate-800">Recent History</h2>
+                        <h2 class="text-xl font-bold text-slate-800">History</h2>
                         <div class="flex bg-slate-100/80 p-1 rounded-xl w-full sm:w-auto">
                             <button id="viewToday"
                                 class="flex-1 sm:flex-none px-4 py-2 bg-white text-indigo-600 shadow-sm rounded-lg text-xs font-bold transition-all">Today</button>
@@ -712,8 +712,6 @@
                             </div>
                             <div>
                                 <h2 class="text-3xl font-bold" id="detailName">Mary Jane</h2>
-                                <p class="text-indigo-100 opacity-90"><i class="fas fa-star text-yellow-400 mr-1"></i>
-                                    VIP Client</p>
                             </div>
                         </div>
                         <div class="flex gap-4 mt-6 text-sm font-medium">
@@ -802,7 +800,7 @@
                                 <div class="flex-1">
                                     <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">WhatsApp
                                         Number</label>
-                                    <input type="tel" id="clientPhone" placeholder="07..."
+                                    <input type="tel" id="clientPhone" placeholder="+254..."
                                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-700 focus:border-green-500 outline-none">
                                 </div>
                                 <div class="flex-1 flex items-end">
@@ -812,8 +810,6 @@
                                     </button>
                                 </div>
                             </div>
-                            <p class="text-xs text-slate-400 mt-3 text-center">Redirects to WhatsApp with a pre-filled
-                                message based on hair analysis.</p>
                         </div>
                     </div>
                 </div>
