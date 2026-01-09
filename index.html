@@ -1794,6 +1794,106 @@
                 renderCards(currentCategory);
             }
         }
+
+
+        // Add this function to request notification permission
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+
+        // Call this when the app starts
+        document.addEventListener('DOMContentLoaded', function () {
+            requestNotificationPermission();
+            // ... rest of your existing initialization code
+        });
+
+        // Add these functions for phone notifications
+        function showPhoneNotification(title, message) {
+            // 1. Check if browser supports notifications
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
+
+            // 2. Check if permission is granted
+            if (Notification.permission === "granted") {
+                createNotification(title, message);
+            }
+            // 3. Otherwise, request permission
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        createNotification(title, message);
+                    }
+                });
+            }
+        }
+
+        function createNotification(title, message) {
+            // Create the notification
+            const notification = new Notification(title, {
+                body: message,
+                icon: 'https://cdn-icons-png.flaticon.com/512/1995/1995515.png', // Optional: Add an icon
+                tag: 'stylist-reminder', // Group similar notifications
+                requireInteraction: false // Auto-close after a few seconds
+            });
+
+            // Optional: Play a sound
+            playNotificationSound();
+
+            // Optional: Vibrate if on mobile
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]); // Vibrate pattern
+            }
+
+            // Optional: Click handler
+            notification.onclick = function () {
+                window.focus();
+                notification.close();
+            };
+        }
+
+        // Add sound function (optional)
+        function playNotificationSound() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=='); // Very short beep
+                audio.volume = 0.3;
+                audio.play().catch(e => console.log("Audio play failed:", e));
+            } catch (e) {
+                console.log("Sound not supported:", e);
+            }
+        }
+
+        // Now update your startReminderCheck() function to use phone notifications:
+        function startReminderCheck() {
+            setInterval(() => {
+                if (!state.reminderEnabled) return;
+                const now = new Date();
+                if (state.lastRecordTime) {
+                    const hoursSinceLastRecord = (now - state.lastRecordTime) / (1000 * 60 * 60);
+                    if (hoursSinceLastRecord >= state.reminderFrequency) {
+                        if (!state.lastReminderTime || (now - state.lastReminderTime) / (1000 * 60 * 60) >= 1) {
+                            // Show BOTH notifications
+                            showNotification('Time to check in?', `It's been ${state.reminderFrequency} hours since your last record.`);
+                            showPhoneNotification('Stylist Reminder', `It's been ${state.reminderFrequency} hours since your last record. Check in now!`);
+
+                            state.lastReminderTime = now;
+                            saveState();
+                        }
+                    }
+                }
+            }, 60000); // Check every minute
+        }
+
+        // Also update your testReminder button to test phone notifications:
+        testReminder.addEventListener('click', function () {
+            if (state.reminderEnabled) {
+                showNotification('Test Notification', 'This is a test of the reminder system.');
+                showPhoneNotification('Stylist Tracker Test', 'This is a test notification from your stylist app!');
+            }
+        });
     </script>
 </body>
 
