@@ -645,13 +645,18 @@
                         </label>
                     </div>
 
+                    <!-- Find this section in the Reminder Settings area -->
                     <div class="mb-6 px-1">
                         <div class="flex justify-between text-xs font-bold text-slate-500 mb-2">
                             <span>Frequency</span>
-                            <span id="frequencyValue" class="text-indigo-600">2 hours</span>
+                            <span id="frequencyValue" class="text-indigo-600">2 mins</span>
                         </div>
-                        <input type="range" id="reminderFrequency" min="1" max="6" value="2"
+                        <input type="range" id="reminderFrequency" min="1" max="60" value="2" step="1"
                             class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        <div class="flex justify-between text-xs text-slate-400 mt-1">
+                            <span>1 min</span>
+                            <span>60 mins</span>
+                        </div>
                     </div>
 
                     <button id="testReminder"
@@ -982,7 +987,10 @@
                 // Update UI to match loaded state
                 hourlyReminders.checked = state.reminderEnabled;
                 reminderFrequency.value = state.reminderFrequency;
-                frequencyValue.textContent = `${state.reminderFrequency} hours`;
+                const minutes = state.reminderFrequency;
+                const displayText = minutes === 1 ? '1 min' :
+                    minutes < 60 ? `${minutes} mins` : '1 hour';
+                frequencyValue.textContent = displayText;
             }
         }
 
@@ -1109,7 +1117,10 @@
             // Reminder frequency slider
             reminderFrequency.addEventListener('input', function () {
                 state.reminderFrequency = parseInt(this.value);
-                frequencyValue.textContent = `${state.reminderFrequency} ${state.reminderFrequency === 1 ? 'hour' : 'hours'}`;
+                const minutes = state.reminderFrequency;
+                const displayText = minutes === 1 ? '1 min' :
+                    minutes < 60 ? `${minutes} mins` : '1 hour';
+                frequencyValue.textContent = displayText;
                 saveState();
             });
 
@@ -1118,7 +1129,9 @@
                 state.reminderEnabled = this.checked;
                 saveState();
                 if (state.reminderEnabled) {
-                    showNotification('Reminders Active', `You'll get a nudge every ${state.reminderFrequency} hours.`);
+                    const timeText = state.reminderFrequency < 60 ?
+                        `${state.reminderFrequency} minutes` : '1 hour';
+                    showNotification('Reminders Active', `You'll get a nudge every ${timeText}.`);
                 } else {
                     showNotification('Reminders Paused', 'Notifications are disabled.');
                 }
@@ -1890,12 +1903,14 @@
                 if (!state.reminderEnabled) return;
                 const now = new Date();
                 if (state.lastRecordTime) {
-                    const hoursSinceLastRecord = (now - state.lastRecordTime) / (1000 * 60 * 60);
-                    if (hoursSinceLastRecord >= state.reminderFrequency) {
-                        if (!state.lastReminderTime || (now - state.lastReminderTime) / (1000 * 60 * 60) >= 1) {
+                    const minutesSinceLastRecord = (now - state.lastRecordTime) / (1000 * 60);
+                    if (minutesSinceLastRecord >= state.reminderFrequency) {
+                        if (!state.lastReminderTime || (now - state.lastReminderTime) / (1000 * 60) >= state.reminderFrequency) {
                             // Show BOTH notifications
-                            showNotification('Time to check in?', `It's been ${state.reminderFrequency} hours since your last record.`);
-                            showPhoneNotification('Stylist Reminder', `It's been ${state.reminderFrequency} hours since your last record. Check in now!`);
+                            const timeText = state.reminderFrequency < 60 ?
+                                `${state.reminderFrequency} minutes` : '1 hour';
+                            showNotification('Time to check in?', `It's been ${timeText} since your last record.`);
+                            showPhoneNotification('Stylist Reminder', `It's been ${timeText} since your last record. Check in now!`);
 
                             state.lastReminderTime = now;
                             saveState();
@@ -1903,7 +1918,7 @@
                     }
                 }
             }, 60000); // Check every minute
-        }
+        };
 
         // Also update your testReminder button to test phone notifications:
         testReminder.addEventListener('click', function () {
