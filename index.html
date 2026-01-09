@@ -191,6 +191,24 @@
                 scroll-snap-align: start;
             }
         }
+
+        /* Add to your existing CSS */
+        @keyframes gentle-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .notification-active {
+            animation: gentle-pulse 2s infinite;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
     </style>
 </head>
 
